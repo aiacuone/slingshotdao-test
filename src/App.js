@@ -12,9 +12,9 @@ import { formatNumber, getDayMonthYear, truncateString } from './utils'
 const ethers = require('ethers')
 
 function App() {
-  const [unlockedSlingTokens, setUnlockedSlingTokens] = useState(0)
-  const [lockedTokens, setLockedTokens] = useState(0)
-  const [votingPower, setVotingPower] = useState(0)
+  const [unlockedSlingTokens, setUnlockedSlingTokens] = useState(null)
+  const [lockedTokens, setLockedTokens] = useState(null)
+  const [votingPower, setVotingPower] = useState(null)
   const [unlockDate, setUnlockDate] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -47,15 +47,17 @@ function App() {
         const unlockedSlingTokensFormatted = ethers.utils.formatEther(
           unlockedSlingTokensBigNumber
         )
-        setUnlockedSlingTokens(unlockedSlingTokensFormatted)
+        setUnlockedSlingTokens(formatNumber(unlockedSlingTokensFormatted))
+
+        //Locked Values
+        const lockedTokensArray = await votingEscrowContract.locked(userAddress)
 
         //Locked Tokens
-        const lockedTokensArray = await votingEscrowContract.locked(userAddress)
         const lockedTokensBigNumber = lockedTokensArray['amount']
         const lockedTokensFormatted = ethers.utils.formatEther(
           lockedTokensBigNumber
         )
-        setLockedTokens(lockedTokensFormatted)
+        setLockedTokens(formatNumber(lockedTokensFormatted))
 
         //Unlock Date
         const dayMonthYear = getDayMonthYear(
@@ -69,7 +71,7 @@ function App() {
         ](userAddress)
         const votingPowerFormatted =
           ethers.utils.formatEther(votingPowerBigNumber)
-        setVotingPower(votingPowerFormatted)
+        setVotingPower(formatNumber(votingPowerFormatted))
       } catch (error) {
         throw new Error(error)
       } finally {
@@ -88,32 +90,34 @@ function App() {
       {isLoading ? (
         <p className="text-4xl font-extrabold text-blue-900">Loading....</p>
       ) : (
-        <div className="stack gap-3 sm:gap-10 w-[600px]">
+        <div className="stack gap-3 sm:gap-10 w-[600px] p-3">
           <p className="text-3xl sm:text-6xl font-extrabold text-blue-900 text-center">
             Your Wallet.
           </p>
-          <p className="flex-wrap hidden sm:block">{userAddress}</p>
-          <p className="flex-wrap sm:hidden block">
+          <p className="flex-wrap hidden sm:block text-gray-500">
+            {userAddress}
+          </p>
+          <p className="flex-wrap sm:hidden block text-gray-500">
             {truncateString(userAddress)}
           </p>
           <div className="stack w-full gap-3 flex-col sm:flex-row">
             <div className="bg-gray-100 w-full h-full rounded-lg shadow-lg p-4 gap-2 flex flex-col">
               <p>Unlocked $SLING Tokens</p>
               <p className="text-3xl sm:text-5xl font-extrabold text-blue-900">
-                {formatNumber(unlockedSlingTokens)}
+                {unlockedSlingTokens}
               </p>
             </div>
             <div className="bg-gray-100 w-full h-full rounded-lg shadow-lg p-4 gap-2 flex flex-col">
               <p>Locked Tokens</p>
               <p className="text-3xl sm:text-5xl font-extrabold text-blue-900">
-                {formatNumber(lockedTokens)}
+                {lockedTokens}
               </p>
             </div>
           </div>
           <div className="bg-gray-100 w-full h-full rounded-lg shadow-lg flex flex-col p-4 gap-2">
             <p>Voting Power</p>
             <p className="text-3xl sm:text-5xl font-extrabold text-blue-900">
-              {formatNumber(votingPower)}
+              {votingPower}
             </p>
             <hr className="w-full" />
             <div className="flex flex-col text-xs">
